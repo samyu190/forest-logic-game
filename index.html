@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Forest of Logic – The Resolution Mystery</title>
+
+<style>
+body{
+    margin:0;
+    font-family:'Times New Roman', serif;
+    color:white;
+    text-align:center;
+}
+
+/* 🌲 MAIN BACKGROUND */
+.forest{
+    background:url("title_image.jpg") no-repeat center center;
+    background-size:cover;
+}
+
+/* 🎬 INTRO BACKGROUND */
+.introbg{
+    background:url("forest_intro.jpg") no-repeat center;
+    background-size:contain;
+    background-color:black;
+}
+
+/* Overlay */
+.overlay{
+    position:fixed;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.6);
+    z-index:-1;
+}
+
+/* Layout */
+.container{
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+
+/* Input */
+input{
+    padding:10px;
+    font-size:16px;
+}
+
+/* Question */
+.question{
+    font-size:32px;
+    color:#FFD700;
+    max-width:800px;
+}
+
+/* Buttons */
+.button{
+    padding:12px 25px;
+    margin:10px;
+    background:#2e8b57;
+    border:none;
+    color:white;
+    cursor:pointer;
+}
+.button:hover{background:#3cb371;}
+
+.hidden{display:none;}
+
+/* Table */
+table{
+    border-collapse:collapse;
+    width:70%;
+    margin:auto;
+}
+
+th,td{
+    border:1px solid white;
+    padding:10px;
+}
+
+/* Top bar */
+#topbar{
+    position:fixed;
+    top:10px;
+    left:10px;
+}
+
+/* Participants button */
+#sideBtn{
+    position:fixed;
+    top:10px;
+    right:10px;
+    background:orange;
+}
+
+/* Buttons group */
+.btn-group{
+    display:flex;
+    gap:20px;
+}
+</style>
+</head>
+
+<body class="forest">
+
+<div class="overlay"></div>
+
+<div id="topbar">⭐ 0 | ⏱ 0s</div>
+<button id="sideBtn" onclick="showParticipants()">📋 Participants</button>
+
+<!-- HOME -->
+<div id="home" class="container">
+<h1>🌲 Forest of Logic – The Resolution Mystery</h1>
+<button class="button" onclick="goToEnter()">Start</button>
+</div>
+
+<!-- ENTER -->
+<div id="enter" class="container hidden">
+<h2>Enter Your Name</h2>
+<input id="name">
+<button class="button" onclick="startGame()">Continue</button>
+</div>
+
+<!-- INTRO -->
+<div id="intro" class="container hidden">
+<h2>Alex is found dead in the forest</h2>
+<p>Only Conrad and Belly were present</p>
+<button class="button" onclick="startQuiz()">Begin Investigation</button>
+</div>
+
+<!-- GAME -->
+<div id="game" class="container hidden">
+<div class="question" id="q"></div>
+<button class="button" onclick="check(true)">True</button>
+<button class="button" onclick="check(false)">False</button>
+</div>
+
+<!-- RESULT -->
+<div id="result" class="container hidden">
+<h2 id="res"></h2>
+<h3 id="fun"></h3>
+<button class="button" onclick="next()">Next</button>
+</div>
+
+<!-- FINAL -->
+<div id="final" class="container hidden">
+<h2 id="scoreText"></h2>
+<h3 id="comment"></h3>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="leader" class="container hidden">
+<h2>🏆 Leaderboard</h2>
+<table id="table"></table>
+
+<div class="btn-group">
+<button class="button" onclick="back()">⬅ Back</button>
+<button class="button" onclick="goHome()">🏠 Home</button>
+</div>
+</div>
+
+<!-- PARTICIPANTS -->
+<div id="participants" class="container hidden">
+<h2>📋 Participants</h2>
+<table id="pTable"></table>
+
+<br>
+<button class="button" onclick="goHome()">🏠 Home</button>
+</div>
+
+<script>
+
+let player="",score=0,time=0,qn=0,timer;
+let board=JSON.parse(localStorage.getItem("board"))||[];
+
+const questions=[
+{q:"If Conrad has no mud, he cannot be the killer.",a:true},
+{q:"Belly can be guilty without mud.",a:false},
+{q:"If Conrad alone has mud, he is guilty.",a:true},
+{q:"Belly without mud can still be guilty.",a:false},
+{q:"If Conrad satisfies all conditions, he is guilty.",a:true},
+{q:"Someone must be guilty without evidence.",a:false}
+];
+
+const funComments=[
+"😎 Nice move detective!",
+"😂 That was tricky!",
+"🔥 You're on fire!",
+"🤔 Think deeper!",
+"🎯 Sharp logic!",
+"😅 Almost!"
+];
+
+/* Hide all pages */
+function hideAll(){
+document.querySelectorAll(".container").forEach(d=>d.classList.add("hidden"));
+}
+
+/* Navigation */
+function goToEnter(){
+hideAll();
+document.getElementById("enter").classList.remove("hidden");
+}
+
+function goHome(){
+hideAll();
+document.body.className="forest";
+document.getElementById("home").classList.remove("hidden");
+}
+
+/* Game start */
+function startGame(){
+player=document.getElementById("name").value;
+if(player==""){alert("Enter name");return;}
+
+document.body.className="introbg";
+hideAll();
+document.getElementById("intro").classList.remove("hidden");
+}
+
+function startQuiz(){
+document.body.className="forest";
+hideAll();
+document.getElementById("game").classList.remove("hidden");
+
+timer=setInterval(()=>{time++;update();},1000);
+load();
+}
+
+/* Questions */
+function load(){
+document.getElementById("q").innerText=questions[qn].q;
+}
+
+function check(a){
+if(a===questions[qn].a)score++;
+
+hideAll();
+document.getElementById("result").classList.remove("hidden");
+
+document.getElementById("res").innerText=a===questions[qn].a?"Correct":"Wrong";
+
+let r=Math.floor(Math.random()*funComments.length);
+document.getElementById("fun").innerText=funComments[r];
+}
+
+function next(){
+qn++;
+if(qn>=questions.length){
+clearInterval(timer);
+
+hideAll();
+document.getElementById("final").classList.remove("hidden");
+
+document.getElementById("scoreText").innerText=
+player+" got "+score+" / 6 correct";
+
+/* Final comment */
+let c="";
+if(score==6)c="🔥 Genius!";
+else if(score==5)c="😎 Almost perfect!";
+else if(score==4)c="👏 Good job!";
+else if(score==3)c="🙂 Not bad!";
+else if(score==2)c="😅 Try again!";
+else if(score==1)c="😂 Oops!";
+else c="🤣 Mission failed!";
+
+document.getElementById("comment").innerText=c;
+
+save();
+
+setTimeout(()=>{showLeaderboard();},4000);
+return;
+}
+
+hideAll();
+document.getElementById("game").classList.remove("hidden");
+load();
+}
+
+/* Timer */
+function update(){
+document.getElementById("topbar").innerText=
+"⭐ "+score+" | ⏱ "+time+"s";
+}
+
+/* Save score */
+function save(){
+board.push({name:player,score:score,time:time});
+board.sort((a,b)=>b.score-a.score||a.time-b.time);
+localStorage.setItem("board",JSON.stringify(board));
+}
+
+/* Leaderboard */
+function showLeaderboard(){
+hideAll();
+document.getElementById("leader").classList.remove("hidden");
+
+let t=document.getElementById("table");
+t.innerHTML="<tr><th>Rank</th><th>Name</th><th>Score</th><th>Time</th></tr>";
+
+board.forEach((p,i)=>{
+t.innerHTML+=`<tr><td>${i+1}</td><td>${p.name}</td><td>${p.score}</td><td>${p.time}s</td></tr>`;
+});
+}
+
+function back(){
+hideAll();
+document.getElementById("final").classList.remove("hidden");
+setTimeout(()=>{showLeaderboard();},4000);
+}
+
+/* Participants */
+function showParticipants(){
+hideAll();
+document.getElementById("participants").classList.remove("hidden");
+
+let t=document.getElementById("pTable");
+t.innerHTML="<tr><th>Name</th><th>Score</th></tr>";
+
+board.forEach(p=>{
+t.innerHTML+=`<tr><td>${p.name}</td><td>${p.score}</td></tr>`;
+});
+}
+
+</script>
+
+</body>
+</html>
