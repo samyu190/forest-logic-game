@@ -18,7 +18,7 @@ body{
     background-size:cover;
 }
 
-/* 🎬 INTRO BACKGROUND */
+/* 🎬 INTRO */
 .introbg{
     background:url("forest_intro.jpg") no-repeat center;
     background-size:contain;
@@ -43,20 +43,14 @@ body{
     align-items:center;
 }
 
-/* Input */
-input{
-    padding:10px;
-    font-size:16px;
-}
+input{padding:10px;}
 
-/* Question */
 .question{
     font-size:32px;
     color:#FFD700;
     max-width:800px;
 }
 
-/* Buttons */
 .button{
     padding:12px 25px;
     margin:10px;
@@ -69,7 +63,6 @@ input{
 
 .hidden{display:none;}
 
-/* Table */
 table{
     border-collapse:collapse;
     width:70%;
@@ -101,6 +94,11 @@ th,td{
     display:flex;
     gap:20px;
 }
+
+/* 🏆 TOP 3 STYLES */
+.top1{color:gold; font-weight:bold;}
+.top2{color:silver; font-weight:bold;}
+.top3{color:#cd7f32; font-weight:bold;}
 </style>
 </head>
 
@@ -166,7 +164,6 @@ th,td{
 <div id="participants" class="container hidden">
 <h2>📋 Participants</h2>
 <table id="pTable"></table>
-
 <br>
 <button class="button" onclick="goHome()">🏠 Home</button>
 </div>
@@ -194,12 +191,10 @@ const funComments=[
 "😅 Almost!"
 ];
 
-/* Hide all pages */
 function hideAll(){
 document.querySelectorAll(".container").forEach(d=>d.classList.add("hidden"));
 }
 
-/* Navigation */
 function goToEnter(){
 hideAll();
 document.getElementById("enter").classList.remove("hidden");
@@ -211,7 +206,6 @@ document.body.className="forest";
 document.getElementById("home").classList.remove("hidden");
 }
 
-/* Game start */
 function startGame(){
 player=document.getElementById("name").value;
 if(player==""){alert("Enter name");return;}
@@ -230,7 +224,6 @@ timer=setInterval(()=>{time++;update();},1000);
 load();
 }
 
-/* Questions */
 function load(){
 document.getElementById("q").innerText=questions[qn].q;
 }
@@ -258,7 +251,6 @@ document.getElementById("final").classList.remove("hidden");
 document.getElementById("scoreText").innerText=
 player+" got "+score+" / 6 correct";
 
-/* Final comment */
 let c="";
 if(score==6)c="🔥 Genius!";
 else if(score==5)c="😎 Almost perfect!";
@@ -281,20 +273,18 @@ document.getElementById("game").classList.remove("hidden");
 load();
 }
 
-/* Timer */
 function update(){
 document.getElementById("topbar").innerText=
 "⭐ "+score+" | ⏱ "+time+"s";
 }
 
-/* Save score */
 function save(){
 board.push({name:player,score:score,time:time});
 board.sort((a,b)=>b.score-a.score||a.time-b.time);
 localStorage.setItem("board",JSON.stringify(board));
 }
 
-/* Leaderboard */
+/* 🏆 ANIMATED LEADERBOARD */
 function showLeaderboard(){
 hideAll();
 document.getElementById("leader").classList.remove("hidden");
@@ -302,9 +292,39 @@ document.getElementById("leader").classList.remove("hidden");
 let t=document.getElementById("table");
 t.innerHTML="<tr><th>Rank</th><th>Name</th><th>Score</th><th>Time</th></tr>";
 
-board.forEach((p,i)=>{
-t.innerHTML+=`<tr><td>${i+1}</td><td>${p.name}</td><td>${p.score}</td><td>${p.time}s</td></tr>`;
-});
+let i=0;
+
+function addRow(){
+if(i>=board.length) return;
+
+let p=board[i];
+
+let cls="",icon="";
+if(i==0){cls="top1"; icon="👑";}
+else if(i==1){cls="top2"; icon="🥈";}
+else if(i==2){cls="top3"; icon="🥉";}
+
+let row=`<tr class="${cls}" style="opacity:0; transform:translateY(20px);" id="row${i}">
+<td>${i+1}</td>
+<td>${icon} ${p.name}</td>
+<td>${p.score}</td>
+<td>${p.time}s</td>
+</tr>`;
+
+t.innerHTML+=row;
+
+setTimeout(()=>{
+let r=document.getElementById("row"+i);
+r.style.transition="0.5s";
+r.style.opacity="1";
+r.style.transform="translateY(0)";
+},100);
+
+i++;
+setTimeout(addRow,400);
+}
+
+addRow();
 }
 
 function back(){
@@ -313,7 +333,6 @@ document.getElementById("final").classList.remove("hidden");
 setTimeout(()=>{showLeaderboard();},4000);
 }
 
-/* Participants */
 function showParticipants(){
 hideAll();
 document.getElementById("participants").classList.remove("hidden");
