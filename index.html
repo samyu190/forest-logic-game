@@ -18,7 +18,7 @@ body{
     background-size:cover;
 }
 
-/* 🎬 INTRO */
+/* 🎬 INTRO BACKGROUND */
 .introbg{
     background:url("forest_intro.jpg") no-repeat center;
     background-size:contain;
@@ -43,7 +43,10 @@ body{
     align-items:center;
 }
 
-input{padding:10px;}
+input{
+    padding:10px;
+    font-size:16px;
+}
 
 .question{
     font-size:32px;
@@ -95,10 +98,10 @@ th,td{
     gap:20px;
 }
 
-/* 🏆 TOP 3 STYLES */
-.top1{color:gold; font-weight:bold;}
-.top2{color:silver; font-weight:bold;}
-.top3{color:#cd7f32; font-weight:bold;}
+/* 🏆 TOP 3 */
+.top1{color:gold;font-weight:bold;}
+.top2{color:silver;font-weight:bold;}
+.top3{color:#cd7f32;font-weight:bold;}
 </style>
 </head>
 
@@ -164,6 +167,7 @@ th,td{
 <div id="participants" class="container hidden">
 <h2>📋 Participants</h2>
 <table id="pTable"></table>
+
 <br>
 <button class="button" onclick="goHome()">🏠 Home</button>
 </div>
@@ -284,7 +288,7 @@ board.sort((a,b)=>b.score-a.score||a.time-b.time);
 localStorage.setItem("board",JSON.stringify(board));
 }
 
-/* 🏆 ANIMATED LEADERBOARD */
+/* 🔥 LIVE LEADERBOARD FIX */
 function showLeaderboard(){
 hideAll();
 document.getElementById("leader").classList.remove("hidden");
@@ -292,36 +296,44 @@ document.getElementById("leader").classList.remove("hidden");
 let t=document.getElementById("table");
 t.innerHTML="<tr><th>Rank</th><th>Name</th><th>Score</th><th>Time</th></tr>";
 
+let valid=board.filter(p=>p.name && p.name.trim()!="");
+
+valid.sort((a,b)=>b.score-a.score||a.time-b.time);
+
 let i=0;
 
 function addRow(){
-if(i>=board.length) return;
+if(i>=valid.length) return;
 
-let p=board[i];
+let p=valid[i];
 
 let cls="",icon="";
-if(i==0){cls="top1"; icon="👑";}
-else if(i==1){cls="top2"; icon="🥈";}
-else if(i==2){cls="top3"; icon="🥉";}
+if(i==0){cls="top1";icon="👑";}
+else if(i==1){cls="top2";icon="🥈";}
+else if(i==2){cls="top3";icon="🥉";}
 
-let row=`<tr class="${cls}" style="opacity:0; transform:translateY(20px);" id="row${i}">
+let row=document.createElement("tr");
+row.className=cls;
+row.style.opacity="0";
+row.style.transform="translateY(20px)";
+
+row.innerHTML=`
 <td>${i+1}</td>
 <td>${icon} ${p.name}</td>
 <td>${p.score}</td>
 <td>${p.time}s</td>
-</tr>`;
+`;
 
-t.innerHTML+=row;
+t.appendChild(row);
 
 setTimeout(()=>{
-let r=document.getElementById("row"+i);
-r.style.transition="0.5s";
-r.style.opacity="1";
-r.style.transform="translateY(0)";
+row.style.transition="0.5s";
+row.style.opacity="1";
+row.style.transform="translateY(0)";
 },100);
 
 i++;
-setTimeout(addRow,400);
+setTimeout(addRow,300);
 }
 
 addRow();
