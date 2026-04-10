@@ -6,102 +6,88 @@
 
 <style>
 body{
-    margin:0;
-    font-family:'Times New Roman', serif;
-    color:white;
-    text-align:center;
+margin:0;
+font-family:'Times New Roman', serif;
+color:white;
+text-align:center;
 }
 
 /* 🌲 MAIN BACKGROUND */
 .forest{
-    background:url("title_image.jpg") no-repeat center center;
-    background-size:cover;
+background:url("./title_image.jpg") no-repeat center center;
+background-size:cover;
 }
 
-/* 🎬 INTRO BACKGROUND */
+/* 🎬 INTRO FIXED FULL SCREEN */
 .introbg{
-    background:url("forest_intro.jpg") no-repeat center;
-    background-size:contain;
-    background-color:black;
+background:url("./forest_intro.jpg") no-repeat center center;
+background-size:cover;
 }
 
-/* Overlay */
+/* OVERLAY */
 .overlay{
-    position:fixed;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.6);
-    z-index:-1;
+position:fixed;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+z-index:-1;
 }
 
-/* Layout */
 .container{
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
 }
 
-input{
-    padding:10px;
-    font-size:16px;
-}
+input{padding:10px;}
 
 .question{
-    font-size:32px;
-    color:#FFD700;
-    max-width:800px;
+font-size:30px;
+color:#FFD700;
+max-width:800px;
 }
 
 .button{
-    padding:12px 25px;
-    margin:10px;
-    background:#2e8b57;
-    border:none;
-    color:white;
-    cursor:pointer;
+padding:12px 25px;
+margin:10px;
+background:#2e8b57;
+border:none;
+color:white;
+cursor:pointer;
 }
-.button:hover{background:#3cb371;}
 
 .hidden{display:none;}
 
 table{
-    border-collapse:collapse;
-    width:70%;
-    margin:auto;
+border-collapse:collapse;
+width:70%;
+margin:auto;
 }
 
 th,td{
-    border:1px solid white;
-    padding:10px;
+border:1px solid white;
+padding:10px;
 }
 
-/* Top bar */
 #topbar{
-    position:fixed;
-    top:10px;
-    left:10px;
+position:fixed;
+top:10px;
+left:10px;
 }
 
-/* Participants button */
 #sideBtn{
-    position:fixed;
-    top:10px;
-    right:10px;
-    background:orange;
+position:fixed;
+top:10px;
+right:10px;
+background:orange;
+padding:10px;
 }
 
-/* Buttons group */
-.btn-group{
-    display:flex;
-    gap:20px;
+.current{
+background:rgba(255,255,255,0.2);
 }
-
-/* 🏆 TOP 3 */
-.top1{color:gold;font-weight:bold;}
-.top2{color:silver;font-weight:bold;}
-.top3{color:#cd7f32;font-weight:bold;}
 </style>
 </head>
 
@@ -121,7 +107,7 @@ th,td{
 <!-- ENTER -->
 <div id="enter" class="container hidden">
 <h2>Enter Your Name</h2>
-<input id="name">
+<input id="nameInput">
 <button class="button" onclick="startGame()">Continue</button>
 </div>
 
@@ -134,7 +120,7 @@ th,td{
 
 <!-- GAME -->
 <div id="game" class="container hidden">
-<div class="question" id="q"></div>
+<div id="q" class="question"></div>
 <button class="button" onclick="check(true)">True</button>
 <button class="button" onclick="check(false)">False</button>
 </div>
@@ -149,34 +135,28 @@ th,td{
 <!-- FINAL -->
 <div id="final" class="container hidden">
 <h2 id="scoreText"></h2>
-<h3 id="comment"></h3>
 </div>
 
 <!-- LEADERBOARD -->
 <div id="leader" class="container hidden">
 <h2>🏆 Leaderboard</h2>
 <table id="table"></table>
-
-<div class="btn-group">
-<button class="button" onclick="back()">⬅ Back</button>
 <button class="button" onclick="goHome()">🏠 Home</button>
-</div>
 </div>
 
 <!-- PARTICIPANTS -->
 <div id="participants" class="container hidden">
 <h2>📋 Participants</h2>
 <table id="pTable"></table>
-
-<br>
 <button class="button" onclick="goHome()">🏠 Home</button>
 </div>
 
 <script>
 
 let player="",score=0,time=0,qn=0,timer;
-let board=JSON.parse(localStorage.getItem("board"))||[];
+let board=[];
 
+/* SAME QUESTIONS */
 const questions=[
 {q:"If Conrad has no mud, he cannot be the killer.",a:true},
 {q:"Belly can be guilty without mud.",a:false},
@@ -186,13 +166,14 @@ const questions=[
 {q:"Someone must be guilty without evidence.",a:false}
 ];
 
+/* 💬 COMMENTS ADDED */
 const funComments=[
-"😎 Nice move detective!",
+"😎 Smart move!",
 "😂 That was tricky!",
 "🔥 You're on fire!",
 "🤔 Think deeper!",
-"🎯 Sharp logic!",
-"😅 Almost!"
+"🎯 Sharp thinking!",
+"😅 Almost there!"
 ];
 
 function hideAll(){
@@ -210,22 +191,42 @@ document.body.className="forest";
 document.getElementById("home").classList.remove("hidden");
 }
 
+/* START */
 function startGame(){
-player=document.getElementById("name").value;
-if(player==""){alert("Enter name");return;}
+let input=document.getElementById("nameInput").value;
 
+if(!input || input.trim()==""){
+alert("Enter name");
+return;
+}
+
+player=input.trim();
+
+/* 🔥 SHOW INTRO IMAGE */
 document.body.className="introbg";
+
 hideAll();
 document.getElementById("intro").classList.remove("hidden");
 }
 
+/* QUIZ */
 function startQuiz(){
 document.body.className="forest";
+
 hideAll();
 document.getElementById("game").classList.remove("hidden");
 
-timer=setInterval(()=>{time++;update();},1000);
+timer=setInterval(()=>{
+time++;
+updateTop();
+},1000);
+
 load();
+}
+
+function updateTop(){
+document.getElementById("topbar").innerText=
+"⭐ "+score+" | ⏱ "+time+"s";
 }
 
 function load(){
@@ -235,40 +236,24 @@ document.getElementById("q").innerText=questions[qn].q;
 function check(a){
 if(a===questions[qn].a)score++;
 
+updateTop();
+
 hideAll();
 document.getElementById("result").classList.remove("hidden");
 
-document.getElementById("res").innerText=a===questions[qn].a?"Correct":"Wrong";
+document.getElementById("res").innerText=
+a===questions[qn].a?"Correct":"Wrong";
 
-let r=Math.floor(Math.random()*funComments.length);
-document.getElementById("fun").innerText=funComments[r];
+/* 💬 SHOW COMMENT */
+document.getElementById("fun").innerText=
+funComments[Math.floor(Math.random()*6)];
 }
 
 function next(){
 qn++;
+
 if(qn>=questions.length){
-clearInterval(timer);
-
-hideAll();
-document.getElementById("final").classList.remove("hidden");
-
-document.getElementById("scoreText").innerText=
-player+" got "+score+" / 6 correct";
-
-let c="";
-if(score==6)c="🔥 Genius!";
-else if(score==5)c="😎 Almost perfect!";
-else if(score==4)c="👏 Good job!";
-else if(score==3)c="🙂 Not bad!";
-else if(score==2)c="😅 Try again!";
-else if(score==1)c="😂 Oops!";
-else c="🤣 Mission failed!";
-
-document.getElementById("comment").innerText=c;
-
-save();
-
-setTimeout(()=>{showLeaderboard();},4000);
+finish();
 return;
 }
 
@@ -277,72 +262,49 @@ document.getElementById("game").classList.remove("hidden");
 load();
 }
 
-function update(){
-document.getElementById("topbar").innerText=
-"⭐ "+score+" | ⏱ "+time+"s";
-}
+/* FINAL */
+function finish(){
+clearInterval(timer);
 
-function save(){
+hideAll();
+document.getElementById("final").classList.remove("hidden");
+
+document.getElementById("scoreText").innerText=
+"🎯 "+player+" scored "+score+" / 6";
+
+/* SAVE */
 board.push({name:player,score:score,time:time});
-board.sort((a,b)=>b.score-a.score||a.time-b.time);
-localStorage.setItem("board",JSON.stringify(board));
+
+setTimeout(showLeaderboard,2000);
 }
 
-/* 🔥 LIVE LEADERBOARD FIX */
+/* LEADERBOARD */
 function showLeaderboard(){
 hideAll();
 document.getElementById("leader").classList.remove("hidden");
 
 let t=document.getElementById("table");
+
 t.innerHTML="<tr><th>Rank</th><th>Name</th><th>Score</th><th>Time</th></tr>";
 
-let valid=board.filter(p=>p.name && p.name.trim()!="");
+board.sort((a,b)=>b.score-a.score||a.time-b.time);
 
-valid.sort((a,b)=>b.score-a.score||a.time-b.time);
-
-let i=0;
-
-function addRow(){
-if(i>=valid.length) return;
-
-let p=valid[i];
-
-let cls="",icon="";
-if(i==0){cls="top1";icon="👑";}
-else if(i==1){cls="top2";icon="🥈";}
-else if(i==2){cls="top3";icon="🥉";}
-
+board.forEach((p,i)=>{
 let row=document.createElement("tr");
-row.className=cls;
-row.style.opacity="0";
-row.style.transform="translateY(20px)";
+
+if(p.name===player){
+row.className="current";
+}
 
 row.innerHTML=`
 <td>${i+1}</td>
-<td>${icon} ${p.name}</td>
+<td>${p.name}</td>
 <td>${p.score}</td>
 <td>${p.time}s</td>
 `;
 
 t.appendChild(row);
-
-setTimeout(()=>{
-row.style.transition="0.5s";
-row.style.opacity="1";
-row.style.transform="translateY(0)";
-},100);
-
-i++;
-setTimeout(addRow,300);
-}
-
-addRow();
-}
-
-function back(){
-hideAll();
-document.getElementById("final").classList.remove("hidden");
-setTimeout(()=>{showLeaderboard();},4000);
+});
 }
 
 function showParticipants(){
@@ -350,6 +312,7 @@ hideAll();
 document.getElementById("participants").classList.remove("hidden");
 
 let t=document.getElementById("pTable");
+
 t.innerHTML="<tr><th>Name</th><th>Score</th></tr>";
 
 board.forEach(p=>{
